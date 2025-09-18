@@ -28,11 +28,7 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.white],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: Colors.white,
         ),
         child: Center(
           child: Column(
@@ -40,8 +36,8 @@ class _SplashScreenState extends State<SplashScreen> {
             children: [
               Image.asset(
                 'assets/delhiPolice.png',
-                height: 150,
-                width: 150,
+                height: 200,
+                width: 200,
               ),
               const SizedBox(height: 20),
               // Text(
