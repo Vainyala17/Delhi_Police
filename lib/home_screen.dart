@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'emergency_screen.dart';
 import 'model/onboarding_model.dart';
-
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -15,7 +15,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+  int activeIndex = 0;
 
+  final List<String> images = [
+    'assets/111.jpg',
+    'assets/222.jpg',
+    'assets/333.jpg',
+  ];
   final List<ServiceItem> _recentlyUsed = [
     ServiceItem('Emergency', Icons.warning, Colors.red),
     ServiceItem('Traffic', Icons.traffic, Colors.blue),
@@ -30,74 +36,94 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(color: Colors.blue[600]),
+              child: Text(
+                'Delhi Police Menu',
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ),
+            ListTile(leading: Icon(Icons.home), title: Text('Home')),
+            ListTile(leading: Icon(Icons.settings), title: Text('Settings')),
+            ListTile(leading: Icon(Icons.info), title: Text('About')),
+          ],
+        ),
+      ),
+      appBar: AppBar(
+        backgroundColor: Colors.blue[600],
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: EdgeInsets.all(13),
+              decoration: BoxDecoration(
+                color: Colors.blue[600],
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Image.asset(
+                            'assets/delhiPolice.png',
+                            height: 50,
+                            width: 50,
+                          ),
+                          SizedBox(width: 10),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Delhi Police',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'SHANTI SEWA NYAYA',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                            onPressed: () {},
+                            icon: Icon(Icons.search, color: Colors.white),
+                          ),
+                          IconButton(
+                            onPressed: () {},
+                            icon: Icon(Icons.notifications, color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ), // Space for bottom navigation
+          ],
+        ),
+      ),
       backgroundColor: Colors.grey[50],
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Header
-              Container(
-                padding: EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.blue[600],
-                  // borderRadius: BorderRadius.only(
-                  //   bottomLeft: Radius.circular(30),
-                  //   bottomRight: Radius.circular(30),
-                  // ),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Image.asset(
-                              'assets/delhiPolice.png',
-                              height: 60,
-                              width: 60,
-                            ),
-                            SizedBox(width: 10),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Delhi Police',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 10),
-                                Text(
-                                  'SHANTI SEWA NYAYA',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            IconButton(
-                              onPressed: () {},
-                              icon: Icon(Icons.search, color: Colors.white),
-                            ),
-                            IconButton(
-                              onPressed: () {},
-                              icon: Icon(Icons.notifications, color: Colors.white),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
               SizedBox(height: 30),
               // Recently Used
               Padding(
@@ -182,46 +208,45 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     const SizedBox(height: 15),
-                    CarouselSlider(
+
+                    // Carousel
+                    CarouselSlider.builder(
                       options: CarouselOptions(
-                        height: 180,
+                        height: 150,
                         autoPlay: true,
-                        enlargeCenterPage: true,
-                        viewportFraction: 0.8,
-                        aspectRatio: 16 / 9,
-                        autoPlayInterval: const Duration(seconds: 3),
+                        enlargeCenterPage: false, // ✅ removes side preview
+                        viewportFraction: 1, // ✅ full width image
+                        onPageChanged: (index, reason) =>
+                            setState(() => activeIndex = index),
                       ),
-                      items: [
-                        'assets/111.jpg',
-                        'assets/222.jpg',
-                        'assets/333.jpg',
-                      ].map((imagePath) {
-                        return Builder(
-                          builder: (BuildContext context) {
-                            return Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 5),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(15),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.2),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(15),
-                                child: Image.asset(
-                                  imagePath,
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                ),
-                              ),
-                            );
-                          },
+                      itemCount: images.length,
+                      itemBuilder: (context, index, realIndex) {
+                        final imagePath = images[index];
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(15),
+                          child: Image.asset(
+                            imagePath,
+                            fit: BoxFit.contain,
+                            width: double.infinity,
+                          ),
                         );
-                      }).toList(),
+                      },
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Dots Indicator
+                    Center(
+                      child: AnimatedSmoothIndicator(
+                        activeIndex: activeIndex,
+                        count: images.length,
+                        effect: ExpandingDotsEffect(
+                          dotHeight: 8,
+                          dotWidth: 8,
+                          activeDotColor: Colors.blue,
+                          dotColor: Colors.grey.shade400,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -243,119 +268,45 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 15),
 
-                    // Update Card
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(15),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.15),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                    // Update 1
+                    _buildUpdateCard(
+                      image: "assets/update1.jpg",
+                      title: "Sh. Satish Golchha, IPS takes charge as Commissioner of Police, Delhi",
+                      date: "22 Aug 2025",
+                      description: "He has previously served in CBI for more than 9 years and held several important positions...",
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Update 2
+                    _buildUpdateCard(
+                      image: "assets/update2.jpg",
+                      title: "Inauguration of Etiquette and Skill Training Session and Unveiling of Two Handbooks",
+                      date: "18 Aug 2025",
+                      description: "Commissioner inaugurated training and unveiled handbooks for Duty Officers...",
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Update 3
+                    _buildUpdateCard(
+                      image: "assets/update3.png",
+                      title: "Independence Day Celebrations at Police Headquarters, Delhi",
+                      date: "15 Aug 2025",
+                      description: "Tricolour was hoisted at Police HQ, CP Delhi congratulated officers and praised arrangements...",
+                    ),
+
+                    const SizedBox(height: 15),
+
+                    // View More button
+                    Center(
+                      child: TextButton.icon(
+                        onPressed: () {
+                          // TODO: Navigate to 'all updates' page
+                        },
+                        icon: const Icon(Icons.arrow_downward),
+                        label: const Text("View More"),
                       ),
-                      child: Row(
-                        children: [
-                          // Left side - Image
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.asset(
-                              "assets/update1.jpg", // your update image
-                              height: 80,
-                              width: 80,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-
-                          // Right side - Text
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Sh. Satish Golchha, IPS takes charge as Commissioner of Police, Delhi",
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  "22 Aug 2025",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  "He has previously served in CBI for more than 9 years and held several important positions...",
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[700],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.asset(
-                              "assets/update1.jpg", // your update image
-                              height: 80,
-                              width: 80,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-
-                          // Right side - Text
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Sh. Satish Golchha, IPS takes charge as Commissioner of Police, Delhi",
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  "22 Aug 2025",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  "He has previously served in CBI for more than 9 years and held several important positions...",
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[700],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-
                     ),
                   ],
                 ),
@@ -380,14 +331,22 @@ class _HomeScreenState extends State<HomeScreen> {
         child: BottomNavigationBar(
           currentIndex: _selectedIndex,
           onTap: (index) {
-            setState(() {
-              _selectedIndex = index;
-            });
-            if (index == 2) {
-              // SOS button pressed
+            if (index == 1) { // Services
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => EmergencyAlertScreen()),
+                MaterialPageRoute(builder: (context) => ComingSoonScreen("Services")),
+              );
+            }
+            else if (index == 3) { // Contact
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ComingSoonScreen("Contact")),
+              );
+            }
+            else if (index == 4) { // More
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ComingSoonScreen("More")),
               );
             }
           },
@@ -433,6 +392,78 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildUpdateCard({
+    required String image,
+    required String title,
+    required String date,
+    required String description,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.15),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Left - Image
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.asset(
+              image,
+              height: 80,
+              width: 80,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(width: 12),
+
+          // Right - Text
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  date,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[700],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
   Widget _buildHowToUseItem(String title, IconData icon, Color color) {
     return ListTile(
       contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -447,6 +478,24 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       trailing: Icon(Icons.chevron_right, color: Colors.grey[400]),
       onTap: () {},
+    );
+  }
+}
+
+class ComingSoonScreen extends StatelessWidget {
+  final String title;
+  ComingSoonScreen(this.title);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Center(
+        child: Text(
+          "🚧 $title - Coming Soon 🚧",
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+      ),
     );
   }
 }

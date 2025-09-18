@@ -1,7 +1,4 @@
-import 'dart:ui';
-import 'dart:async';
 import 'dart:math';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'home_screen.dart';
@@ -16,12 +13,11 @@ class _AuthScreenState extends State<AuthScreen> {
   bool _isForgotPassword = false;
   String _captchaCode = '';
 
-  // Controllers
-  TextEditingController _mobileController = TextEditingController();
-  TextEditingController _otpController = TextEditingController();
-  TextEditingController _captchaController = TextEditingController();
-  TextEditingController _nameController = TextEditingController();
-  TextEditingController _emailController = TextEditingController();
+  final TextEditingController _mobileController = TextEditingController();
+  final TextEditingController _otpController = TextEditingController();
+  final TextEditingController _captchaController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
 
   @override
   void initState() {
@@ -31,9 +27,9 @@ class _AuthScreenState extends State<AuthScreen> {
 
   void _generateCaptcha() {
     final random = Random();
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     _captchaCode = String.fromCharCodes(
-      Iterable.generate(6, (_) => chars.codeUnitAt(random.nextInt(chars.length))),
+      Iterable.generate(5, (_) => chars.codeUnitAt(random.nextInt(chars.length))),
     );
     setState(() {});
   }
@@ -73,135 +69,94 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.all(20),
+      body: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
             child: Column(
               children: [
-                SizedBox(height: 50),
-                // Logo and Title
-                Icon(
-                  Icons.security,
-                  size: 80,
-                  color: Colors.blue[600],
-                ),
-                SizedBox(height: 20),
+                const Icon(Icons.security, size: 90, color: Colors.white),
+                const SizedBox(height: 10),
                 Text(
-                  _isForgotPassword ? 'Forgot Password' : (_isLogin ? 'Login' : 'Register'),
-                  style: TextStyle(
+                  _isForgotPassword ? 'Forgot Password' : (_isLogin ? 'Welcome Back' : 'Create Account'),
+                  style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
+                    color: Colors.white,
                   ),
                 ),
-                SizedBox(height: 40),
-                // Form
+                const SizedBox(height: 40),
+
+                // Card Container
                 Container(
-                  padding: EdgeInsets.all(30),
+                  padding: const EdgeInsets.all(25),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(25),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.3),
-                        blurRadius: 20,
-                        offset: Offset(0, 10),
+                        color: Colors.black26,
+                        blurRadius: 15,
+                        offset: Offset(0, 6),
                       ),
                     ],
                   ),
                   child: Column(
                     children: [
                       if (!_isLogin && !_isForgotPassword) ...[
-                        TextField(
-                          controller: _nameController,
-                          decoration: InputDecoration(
-                            labelText: 'Full Name',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            prefixIcon: Icon(Icons.person),
-                          ),
-                        ),
-                        SizedBox(height: 20),
-                        TextField(
-                          controller: _emailController,
-                          decoration: InputDecoration(
-                            labelText: 'Email',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            prefixIcon: Icon(Icons.email),
-                          ),
-                        ),
-                        SizedBox(height: 20),
+                        _buildTextField(_nameController, 'Full Name', Icons.person),
+                        const SizedBox(height: 15),
+                        _buildTextField(_emailController, 'Email', Icons.email),
+                        const SizedBox(height: 15),
                       ],
-                      TextField(
-                        controller: _mobileController,
-                        keyboardType: TextInputType.phone,
-                        decoration: InputDecoration(
-                          labelText: 'Mobile Number',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          prefixIcon: Icon(Icons.phone),
-                        ),
-                      ),
+
+                      _buildTextField(_mobileController, 'Mobile Number', Icons.phone, inputType: TextInputType.phone),
+
                       if (!_isForgotPassword) ...[
-                        SizedBox(height: 20),
-                        TextField(
-                          controller: _otpController,
-                          decoration: InputDecoration(
-                            labelText: 'OTP (Use: 123456)',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            prefixIcon: Icon(Icons.sms),
-                          ),
-                        ),
+                        const SizedBox(height: 15),
+                        _buildTextField(_otpController, 'OTP (Use: 123456)', Icons.sms),
                       ],
-                      SizedBox(height: 20),
-                      // CAPTCHA
+
+                      const SizedBox(height: 15),
+                      // Captcha
                       Container(
-                        padding: EdgeInsets.all(15),
+                        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
                         decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.grey[300]!),
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
                               _captchaCode,
-                              style: TextStyle(
-                                fontSize: 20,
+                              style: const TextStyle(
+                                fontSize: 22,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 3,
-                                fontFamily: 'monospace',
                               ),
                             ),
                             IconButton(
                               onPressed: _generateCaptcha,
-                              icon: Icon(Icons.refresh, color: Colors.blue[600]),
+                              icon: const Icon(Icons.refresh, color: Colors.blue),
                             ),
                           ],
                         ),
                       ),
-                      SizedBox(height: 15),
-                      TextField(
-                        controller: _captchaController,
-                        decoration: InputDecoration(
-                          labelText: 'Enter CAPTCHA',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          prefixIcon: Icon(Icons.security),
-                        ),
-                      ),
-                      SizedBox(height: 30),
-                      // Submit Button
+                      const SizedBox(height: 15),
+                      _buildTextField(_captchaController, 'Enter Captcha', Icons.lock),
+
+                      const SizedBox(height: 25),
+
+                      // Button
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -213,68 +168,47 @@ class _AuthScreenState extends State<AuthScreen> {
                           }
                               : (_isLogin ? _handleLogin : _handleRegister),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue[600],
-                            padding: EdgeInsets.symmetric(vertical: 15),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            backgroundColor: Colors.blue[700],
                           ),
                           child: Text(
                             _isForgotPassword
                                 ? 'Send OTP'
                                 : (_isLogin ? 'Login' : 'Register'),
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
-                      SizedBox(height: 20),
-                      // Navigation Links
+                      const SizedBox(height: 20),
+
+                      // Links
                       if (!_isForgotPassword) ...[
                         if (_isLogin) ...[
                           TextButton(
-                            onPressed: () {
-                              setState(() {
-                                _isForgotPassword = true;
-                              });
-                            },
-                            child: Text('Forgot Password?'),
+                            onPressed: () => setState(() => _isForgotPassword = true),
+                            child: const Text('Forgot Password?'),
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text("Don't have an account? "),
+                              const Text("Don't have an account? "),
                               TextButton(
-                                onPressed: () {
-                                  setState(() {
-                                    _isLogin = false;
-                                  });
-                                },
-                                child: Text('Register'),
+                                onPressed: () => setState(() => _isLogin = false),
+                                child: const Text('Register'),
                               ),
                             ],
                           ),
                         ] else ...[
                           TextButton(
-                            onPressed: () {
-                              setState(() {
-                                _isLogin = true;
-                              });
-                            },
-                            child: Text('Back to Login'),
+                            onPressed: () => setState(() => _isLogin = true),
+                            child: const Text('Back to Login'),
                           ),
                         ],
                       ] else ...[
                         TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _isForgotPassword = false;
-                            });
-                          },
-                          child: Text('Back to Login'),
+                          onPressed: () => setState(() => _isForgotPassword = false),
+                          child: const Text('Back to Login'),
                         ),
                       ],
                     ],
@@ -283,6 +217,29 @@ class _AuthScreenState extends State<AuthScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, IconData icon,
+      {TextInputType inputType = TextInputType.text}) {
+    return TextField(
+      controller: controller,
+      keyboardType: inputType,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: Colors.blue[700]),
+        filled: true,
+        fillColor: Colors.grey[100],
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.blue.shade400, width: 2),
         ),
       ),
     );
