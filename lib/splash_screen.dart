@@ -1,10 +1,9 @@
-import 'dart:async';
-import 'dart:ui';
-import 'dart:math';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 import 'emergency_screen.dart';
+import 'onboarding_screen.dart';
+import 'emergency_screen.dart';
+import 'home_screen.dart'; // Your main home screen
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -15,14 +14,18 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Timer(Duration(seconds: 7), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => EmergencyAlertScreen()),
-      );
-    });
+    _checkUserStatus();
   }
 
+  _checkUserStatus() async {
+    await Future.delayed(Duration(seconds: 2)); // Splash delay
+
+    // Always go to Emergency Screen first (common for all users)
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => EmergencyAlertScreen(isFromSplash: true)),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
