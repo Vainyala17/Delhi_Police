@@ -1,12 +1,32 @@
-import 'dart:ui';
-import 'dart:async';
-import 'dart:math';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import 'home_screen.dart'; // Your main home screen
+import 'package:shared_preferences/shared_preferences.dart';
 import 'onboarding_screen.dart';
 
 class EmergencyAlertScreen extends StatelessWidget {
+  final bool isFromSplash;
+
+  EmergencyAlertScreen({this.isFromSplash = false});
+
+  Future<void> _handleSOS(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool hasCompletedOnboarding = prefs.getBool('has_completed_onboarding') ?? false;
+    bool isLoggedIn = prefs.getBool('is_logged_in') ?? false;
+
+    if (hasCompletedOnboarding && isLoggedIn) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => OnboardingScreen()),
+      );
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,7 +34,7 @@ class EmergencyAlertScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // Top bar with close button
+            // Always show top bar with close button
             Padding(
               padding: EdgeInsets.all(16.0),
               child: Row(
@@ -22,12 +42,7 @@ class EmergencyAlertScreen extends StatelessWidget {
                 children: [
                   IconButton(
                     icon: Icon(Icons.close, color: Colors.white, size: 30),
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => OnboardingScreen()),
-                      );
-                    },
+                    onPressed: () => _handleSOS(context),
                   ),
                 ],
               ),
@@ -65,7 +80,17 @@ class EmergencyAlertScreen extends StatelessWidget {
                     onTap: () {
                       // SOS functionality
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Emergency services contacted!')),
+                        SnackBar(
+                          content: Text('Emergency services contacted!'),
+                          backgroundColor: Colors.white,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+
+                      // After SOS → go directly to HomeScreen
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => HomeScreen()),
                       );
                     },
                     child: Container(

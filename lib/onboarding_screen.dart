@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'dart:async';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_screen.dart';
 import 'model/onboarding_model.dart';
 
@@ -79,6 +79,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     });
   }
 
+  // Mark onboarding as completed
+  _completeOnboarding() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('has_completed_onboarding', true);
+  }
+
+  _navigateToAuth() async {
+    _timer?.cancel();
+    await _completeOnboarding();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginScreen()),
+    );
+  }
+
   @override
   void dispose() {
     _timer?.cancel();
@@ -99,12 +114,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => AuthScreen()),
-                      );
-                    },
+                    onPressed: _navigateToAuth,
                     child: Text(
                       'Skip',
                       style: TextStyle(
@@ -231,10 +241,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   FloatingActionButton(
                     onPressed: () {
                       if (_currentIndex == _slides.length - 1) {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => AuthScreen()),
-                        );
+                        _navigateToAuth();
                       } else {
                         _currentIndex++;
                         _pageController.animateToPage(

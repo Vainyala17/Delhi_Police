@@ -1,17 +1,17 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'register_screen.dart';
-import 'forgot_password_screen.dart';
+import 'emergency_screen.dart';
 import 'home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'emergency_screen.dart';
-class LoginScreen extends StatefulWidget {
+class RegisterScreen extends StatefulWidget {
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  _RegisterScreenState createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin {
+class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStateMixin {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _mobileController = TextEditingController();
   final TextEditingController _otpController = TextEditingController();
   final TextEditingController _captchaController = TextEditingController();
@@ -19,6 +19,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
   bool _isOtpSent = false;
   bool _isLoading = false;
   bool _obscureOtp = true;
+  bool _agreeToTerms = false;
   String _captchaCode = '';
 
   late AnimationController _animationController;
@@ -31,7 +32,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     _generateCaptcha();
 
     _animationController = AnimationController(
-      duration: Duration(milliseconds: 1000),
+      duration: Duration(milliseconds: 1200),
       vsync: this,
     );
 
@@ -57,6 +58,8 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
   @override
   void dispose() {
     _animationController.dispose();
+    _nameController.dispose();
+    _emailController.dispose();
     _mobileController.dispose();
     _otpController.dispose();
     _captchaController.dispose();
@@ -91,9 +94,29 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     _showSnackBar('OTP sent to ${_mobileController.text}. Use: 123456', Colors.green);
   }
 
-  Future<void> _handleLogin() async {
-    if (_mobileController.text.isEmpty || _otpController.text.isEmpty || _captchaController.text.isEmpty) {
-      _showSnackBar('Please fill all fields', Colors.red);
+  bool _isValidEmail(String email) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
+
+  Future<void> _handleRegister() async {
+    // Validation
+    if (_nameController.text.trim().isEmpty) {
+      _showSnackBar('Please enter your full name', Colors.red);
+      return;
+    }
+
+    if (_emailController.text.trim().isEmpty || !_isValidEmail(_emailController.text.trim())) {
+      _showSnackBar('Please enter a valid email address', Colors.red);
+      return;
+    }
+
+    if (_mobileController.text.length != 10) {
+      _showSnackBar('Please enter a valid 10-digit mobile number', Colors.red);
+      return;
+    }
+
+    if (!_isOtpSent) {
+      _showSnackBar('Please send OTP first', Colors.red);
       return;
     }
 
@@ -109,18 +132,35 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       return;
     }
 
+    if (!_agreeToTerms) {
+      _showSnackBar('Please accept Terms & Conditions', Colors.red);
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     // Simulate API call
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(Duration(seconds: 3));
+
+    _showSnackBar('Registration successful!', Colors.green);
+
+    // Navigate to home after a short delay
+    await Future.delayed(Duration(seconds: 1));
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('is_logged_in', true);
     await prefs.setBool('has_completed_onboarding', true);
 
-    Navigator.pushReplacement(
+    Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => HomeScreen()),
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => EmergencyAlertScreen(isFromSplash: true),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: Duration(milliseconds: 800),
+      ),
+          (route) => false,
     );
   }
 
@@ -143,13 +183,13 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
         height: MediaQuery.of(context).size.height,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
             colors: [
-              Color(0xFF1565C0),
-              Color(0xFF1976D2),
-              Color(0xFF1E88E5),
-              Color(0xFF42A5F5),
+              Color(0xFF6A1B9A),
+              Color(0xFF8E24AA),
+              Color(0xFFAB47BC),
+              Color(0xFFBA68C8),
             ],
             stops: [0.0, 0.3, 0.7, 1.0],
           ),
@@ -166,7 +206,14 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(height: 40),
+                      // Back Button
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+                        padding: EdgeInsets.zero,
+                      ),
+
+                      SizedBox(height: 20),
 
                       // Header
                       Center(
@@ -180,14 +227,14 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                                 border: Border.all(color: Colors.white.withOpacity(0.2), width: 2),
                               ),
                               child: Icon(
-                                Icons.security,
-                                size: 60,
+                                Icons.person_add,
+                                size: 50,
                                 color: Colors.white,
                               ),
                             ),
                             SizedBox(height: 24),
                             Text(
-                              'Welcome Back',
+                              'Create Account',
                               style: TextStyle(
                                 fontSize: 32,
                                 fontWeight: FontWeight.bold,
@@ -197,7 +244,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                             ),
                             SizedBox(height: 8),
                             Text(
-                              'Sign in to your account',
+                              'Join us today and get started',
                               style: TextStyle(
                                 fontSize: 16,
                                 color: Colors.white.withOpacity(0.8),
@@ -208,9 +255,9 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                         ),
                       ),
 
-                      SizedBox(height: 50),
+                      SizedBox(height: 40),
 
-                      // Login Card
+                      // Register Card
                       Container(
                         padding: EdgeInsets.all(28),
                         decoration: BoxDecoration(
@@ -227,6 +274,29 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // Full Name
+                            _buildInputLabel('Full Name'),
+                            SizedBox(height: 8),
+                            _buildTextField(
+                              controller: _nameController,
+                              hintText: 'Enter your full name',
+                              prefixIcon: Icons.person_outline,
+                            ),
+
+                            SizedBox(height: 20),
+
+                            // Email
+                            _buildInputLabel('Email Address'),
+                            SizedBox(height: 8),
+                            _buildTextField(
+                              controller: _emailController,
+                              hintText: 'Enter your email address',
+                              prefixIcon: Icons.email_outlined,
+                              keyboardType: TextInputType.emailAddress,
+                            ),
+
+                            SizedBox(height: 20),
+
                             // Mobile Number
                             _buildInputLabel('Mobile Number'),
                             SizedBox(height: 8),
@@ -242,7 +312,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                                 child: Text(
                                   'Send OTP',
                                   style: TextStyle(
-                                    color: Colors.blue[700],
+                                    color: Colors.purple[700],
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -252,7 +322,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
 
                             if (_isOtpSent) ...[
                               SizedBox(height: 20),
-                              _buildInputLabel('OTP'),
+                              _buildInputLabel('OTP Verification'),
                               SizedBox(height: 8),
                               _buildTextField(
                                 controller: _otpController,
@@ -309,12 +379,12 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                                   SizedBox(width: 12),
                                   Container(
                                     decoration: BoxDecoration(
-                                      color: Colors.blue[50],
+                                      color: Colors.purple[50],
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: IconButton(
                                       onPressed: _generateCaptcha,
-                                      icon: Icon(Icons.refresh, color: Colors.blue[700]),
+                                      icon: Icon(Icons.refresh, color: Colors.purple[700]),
                                       tooltip: 'Refresh Captcha',
                                     ),
                                   ),
@@ -329,16 +399,60 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                               prefixIcon: Icons.security,
                             ),
 
+                            SizedBox(height: 24),
+
+                            // Terms & Conditions
+                            Row(
+                              children: [
+                                Transform.scale(
+                                  scale: 1.2,
+                                  child: Checkbox(
+                                    value: _agreeToTerms,
+                                    onChanged: (value) => setState(() => _agreeToTerms = value ?? false),
+                                    activeColor: Colors.purple[700],
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: RichText(
+                                    text: TextSpan(
+                                      text: 'I agree to the ',
+                                      style: TextStyle(color: Colors.grey[700], fontSize: 14),
+                                      children: [
+                                        TextSpan(
+                                          text: 'Terms & Conditions',
+                                          style: TextStyle(
+                                            color: Colors.purple[700],
+                                            fontWeight: FontWeight.w600,
+                                            decoration: TextDecoration.underline,
+                                          ),
+                                        ),
+                                        TextSpan(text: ' and '),
+                                        TextSpan(
+                                          text: 'Privacy Policy',
+                                          style: TextStyle(
+                                            color: Colors.purple[700],
+                                            fontWeight: FontWeight.w600,
+                                            decoration: TextDecoration.underline,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+
                             SizedBox(height: 32),
 
-                            // Login Button
+                            // Register Button
                             SizedBox(
                               width: double.infinity,
                               height: 56,
                               child: ElevatedButton(
-                                onPressed: _isLoading ? null : _handleLogin,
+                                onPressed: _isLoading ? null : _handleRegister,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue[700],
+                                  backgroundColor: Colors.purple[700],
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16),
                                   ),
@@ -354,32 +468,11 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                                   ),
                                 )
                                     : Text(
-                                  'Sign In',
+                                  'Create Account',
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            SizedBox(height: 20),
-
-                            // Forgot Password
-                            Center(
-                              child: TextButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
-                                  );
-                                },
-                                child: Text(
-                                  'Forgot Password?',
-                                  style: TextStyle(
-                                    color: Colors.blue[700],
-                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),
@@ -390,7 +483,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
 
                       SizedBox(height: 32),
 
-                      // Register Link
+                      // Login Link
                       Container(
                         padding: EdgeInsets.all(24),
                         decoration: BoxDecoration(
@@ -402,32 +495,16 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              "Don't have an account? ",
+                              "Already have an account? ",
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.8),
                                 fontSize: 16,
                               ),
                             ),
                             GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  PageRouteBuilder(
-                                    pageBuilder: (context, animation, secondaryAnimation) => RegisterScreen(),
-                                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                      return SlideTransition(
-                                        position: animation.drive(
-                                          Tween(begin: Offset(1.0, 0.0), end: Offset.zero),
-                                        ),
-                                        child: child,
-                                      );
-                                    },
-                                    transitionDuration: Duration(milliseconds: 500),
-                                  ),
-                                );
-                              },
+                              onTap: () => Navigator.pop(context),
                               child: Text(
-                                'Sign Up',
+                                'Sign In',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 16,
@@ -508,7 +585,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(color: Colors.blue[400]!, width: 2),
+            borderSide: BorderSide(color: Colors.purple[400]!, width: 2),
           ),
           contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           counterText: '',

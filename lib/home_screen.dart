@@ -1,9 +1,11 @@
 import 'dart:ui';
 import 'dart:async';
 import 'dart:math';
+import 'package:delhi_police/splash_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'emergency_screen.dart';
 import 'model/onboarding_model.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -22,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
     'assets/222.jpg',
     'assets/333.jpg',
   ];
+
   final List<ServiceItem> _recentlyUsed = [
     ServiceItem('Emergency', Icons.warning, Colors.red),
     ServiceItem('Traffic', Icons.traffic, Colors.blue),
@@ -50,73 +53,94 @@ class _HomeScreenState extends State<HomeScreen> {
             ListTile(leading: Icon(Icons.home), title: Text('Home')),
             ListTile(leading: Icon(Icons.settings), title: Text('Settings')),
             ListTile(leading: Icon(Icons.info), title: Text('About')),
+            ListTile(
+              leading: Icon(Icons.logout),
+              title: Text('Logout'),
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text("Logout"),
+                      content: Text("Are you sure you want to logout?"),
+                      actions: [
+                        TextButton(
+                          child: Text("Cancel"),
+                          onPressed: () {
+                            Navigator.pop(context); // close dialog
+                          },
+                        ),
+                        TextButton(
+                          child: Text("Yes"),
+                          onPressed: () {
+                            Navigator.pop(context); // close dialog
+                            _logout(context); // call logout function
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
           ],
         ),
       ),
-      appBar: AppBar(
-        backgroundColor: Colors.blue[600],
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: EdgeInsets.all(13),
-              decoration: BoxDecoration(
-                color: Colors.blue[600],
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Image.asset(
-                            'assets/delhiPolice.png',
-                            height: 50,
-                            width: 50,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(70),
+        child: AppBar(
+          backgroundColor: Colors.blue[600],
+          elevation: 0,
+          flexibleSpace: Container(
+            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 10,
+                left: 60, right: 16, bottom: 10),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Image.asset(
+                      'assets/delhiPolice.png',
+                      height: 50,
+                      width: 50,
+                    ),
+                    SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Delhi Police',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
-                          SizedBox(width: 10),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Delhi Police',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                'SHANTI SEWA NYAYA',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          'SHANTI SEWA NYAYA',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
                           ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          IconButton(
-                            onPressed: () {},
-                            icon: Icon(Icons.search, color: Colors.white),
-                          ),
-                          IconButton(
-                            onPressed: () {},
-                            icon: Icon(Icons.notifications, color: Colors.white),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ), // Space for bottom navigation
-          ],
+                        ),
+                      ],
+                    ),
+                    SizedBox(width: 17),
+                    IconButton(
+                      onPressed: () {},
+                      icon: Icon(Icons.search, color: Colors.white),
+                    ),
+                    IconButton(
+                      onPressed: () {},
+                      icon: Icon(Icons.notifications, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
       ),
       backgroundColor: Colors.grey[50],
@@ -124,7 +148,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              SizedBox(height: 30),
+              SizedBox(height: 20),
               // Recently Used
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
@@ -152,7 +176,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemBuilder: (context, index) {
                         final service = _recentlyUsed[index];
                         return GestureDetector(
-                          onTap: () {},
+                          onTap: () {
+                            if (service.name == 'Emergency') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => EmergencyScreen()),
+                              );
+                            }
+                          },
                           child: Container(
                             decoration: BoxDecoration(
                               color: Colors.white,
@@ -199,14 +230,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'How to Use',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[800],
-                      ),
-                    ),
+                    // Text(
+                    //   'How to Use',
+                    //   style: TextStyle(
+                    //     fontSize: 20,
+                    //     fontWeight: FontWeight.bold,
+                    //     color: Colors.grey[800],
+                    //   ),
+                    // ),
                     const SizedBox(height: 15),
 
                     // Carousel
@@ -214,8 +245,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       options: CarouselOptions(
                         height: 150,
                         autoPlay: true,
-                        enlargeCenterPage: false, // ✅ removes side preview
-                        viewportFraction: 1, // ✅ full width image
+                        enlargeCenterPage: false,
+                        viewportFraction: 1,
                         onPageChanged: (index, reason) =>
                             setState(() => activeIndex = index),
                       ),
@@ -226,7 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           borderRadius: BorderRadius.circular(15),
                           child: Image.asset(
                             imagePath,
-                            fit: BoxFit.contain,
+                            fit: BoxFit.cover,
                             width: double.infinity,
                           ),
                         );
@@ -252,7 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               SizedBox(height: 30),
-              // Quick Actions
+              // Latest Updates
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: Column(
@@ -331,10 +362,20 @@ class _HomeScreenState extends State<HomeScreen> {
         child: BottomNavigationBar(
           currentIndex: _selectedIndex,
           onTap: (index) {
+            setState(() {
+              _selectedIndex = index;
+            });
+
             if (index == 1) { // Services
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => ComingSoonScreen("Services")),
+              );
+            }
+            else if (index == 2) { // SOS
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => EmergencyScreen()),
               );
             }
             else if (index == 3) { // Contact
@@ -391,6 +432,19 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+  Future<void> _logout(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('is_logged_in', false);
+    await prefs.setBool('has_completed_onboarding', false);
+
+    // Clear navigation stack & restart at Splash
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => SplashScreen()),
+          (route) => false,
+    );
+  }
+
 
   Widget _buildUpdateCard({
     required String image,
@@ -421,6 +475,17 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 80,
               width: 80,
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  height: 80,
+                  width: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(Icons.image, color: Colors.grey[600]),
+                );
+              },
             ),
           ),
           const SizedBox(width: 12),
@@ -464,22 +529,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-  Widget _buildHowToUseItem(String title, IconData icon, Color color) {
-    return ListTile(
-      contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      leading: Icon(icon, color: color, size: 24),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-          color: Colors.grey[800],
-        ),
-      ),
-      trailing: Icon(Icons.chevron_right, color: Colors.grey[400]),
-      onTap: () {},
-    );
-  }
 }
 
 class ComingSoonScreen extends StatelessWidget {
@@ -489,11 +538,77 @@ class ComingSoonScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBar(
+        title: Text(title),
+        backgroundColor: Colors.blue[600],
+      ),
       body: Center(
-        child: Text(
-          "🚧 $title - Coming Soon 🚧",
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.construction,
+              size: 80,
+              color: Colors.grey[400],
+            ),
+            SizedBox(height: 20),
+            Text(
+              "🚧 $title - Coming Soon 🚧",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 10),
+            Text(
+              "We're working hard to bring you this feature!",
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Placeholder EmergencyScreen
+class EmergencyScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Emergency'),
+        backgroundColor: Colors.red[600],
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.warning,
+              size: 80,
+              color: Colors.red,
+            ),
+            SizedBox(height: 20),
+            Text(
+              "Emergency Services",
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Emergency call logic
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Calling emergency services...')),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+              ),
+              child: Text(
+                'CALL NOW',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
         ),
       ),
     );
